@@ -974,6 +974,26 @@
     document.getElementById('ecx').onclick = function () { document.body.removeChild(wrap); };
   }
 
+  var originalTexts = {};
+
+  function saveOriginals() {
+    document.querySelectorAll('[data-editable]').forEach(function (el, i) {
+      el.setAttribute('data-orig-id', i);
+      originalTexts[i] = el.innerHTML;
+    });
+  }
+
+  function undoChanges() {
+    document.querySelectorAll('[data-editable]').forEach(function (el) {
+      var id = el.getAttribute('data-orig-id');
+      if (id !== null && originalTexts[id] !== undefined) {
+        el.innerHTML = originalTexts[id];
+      }
+    });
+    var btn = document.getElementById('ebtn-u');
+    if (btn) { btn.textContent = '↩ Desfeito!'; setTimeout(function () { btn.textContent = '↩ Desfazer tudo'; }, 1500); }
+  }
+
   function enableEdit() {
     var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','BR','HR','HEADER','SECTION','FOOTER','DIV']);
     var page = document.getElementById('page-dark');
@@ -997,6 +1017,7 @@
       el.style.borderRadius = '2px';
       el.style.minHeight = '1em';
     });
+    saveOriginals();
 
     var bar = document.createElement('div');
     bar.id = 'edit-bar';
@@ -1004,6 +1025,7 @@
       '<div style="position:fixed;top:0;left:0;right:0;z-index:99998;background:#C2A36B;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;font-family:Manrope,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);">',
         '<span style="font-weight:700;font-size:13px;color:#14110F;letter-spacing:.4px;">✏️  MODO EDIÇÃO — clique em qualquer texto dourado para editar</span>',
         '<div style="display:flex;gap:10px;">',
+          '<button id="ebtn-u" style="padding:8px 18px;background:transparent;border:1px solid rgba(20,17,15,.3);border-radius:4px;font-weight:700;font-size:13px;color:#14110F;cursor:pointer;">↩ Desfazer tudo</button>',
           '<button id="ebtn-d" style="padding:8px 18px;background:transparent;border:1px solid rgba(20,17,15,.3);border-radius:4px;font-weight:700;font-size:13px;color:#14110F;cursor:pointer;">Descartar</button>',
           '<button id="ebtn-s" style="padding:8px 22px;background:#14110F;border:none;border-radius:4px;font-weight:700;font-size:13px;color:#C2A36B;cursor:pointer;">Publicar alterações</button>',
         '</div>',
@@ -1012,6 +1034,7 @@
     document.body.prepend(bar);
     document.body.style.paddingTop = '46px';
 
+    document.getElementById('ebtn-u').onclick = undoChanges;
     document.getElementById('ebtn-d').onclick = function () { location.reload(); };
     document.getElementById('ebtn-s').onclick = publish;
   }
