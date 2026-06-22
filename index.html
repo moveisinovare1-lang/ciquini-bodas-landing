@@ -1033,11 +1033,17 @@
 
       el.contentEditable = 'true';
       el.setAttribute('data-editable', '1');
-      el.style.outline = '2px dashed rgba(194,163,107,.45)';
-      el.style.borderRadius = '2px';
+      var hasTextNow = el.textContent.trim().length > 0;
+      el.style.outline = hasTextNow ? '2px dashed rgba(194,163,107,.45)' : 'none';
+      el.style.borderRadius = hasTextNow ? '2px' : '';
       el.style.minHeight = '1em';
 
       el.addEventListener('input', function () {
+        // Atualiza contorno conforme texto entra/sai
+        var t = el.textContent.trim().length > 0;
+        el.style.outline = t ? '2px dashed rgba(194,163,107,.45)' : 'none';
+        el.style.borderRadius = t ? '2px' : '';
+
         // Remove wrappers <div> que o browser injeta ao redigitar campo vazio
         Array.from(el.querySelectorAll('div')).forEach(function (div) {
           var p = div.parentNode;
