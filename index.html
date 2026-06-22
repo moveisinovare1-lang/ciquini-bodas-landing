@@ -1016,6 +1016,13 @@
       }
       node = walker.nextNode();
     }
+    // Força herança de fonte ao digitar em campos editáveis
+    var editStyle = document.createElement('style');
+    editStyle.id = 'edit-font-fix';
+    editStyle.textContent = '[data-editable], [data-editable] div, [data-editable] span { font-family: inherit !important; font-size: inherit !important; font-weight: inherit !important; font-style: inherit !important; color: inherit !important; }';
+    document.head.appendChild(editStyle);
+    document.execCommand('defaultParagraphSeparator', false, 'br');
+
     toEdit.forEach(function (el) {
       el.contentEditable = 'true';
       el.setAttribute('data-editable', '1');
