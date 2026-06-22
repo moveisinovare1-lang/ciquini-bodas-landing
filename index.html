@@ -1004,10 +1004,13 @@
       return Array.from(el.children).every(function(c) { return c.tagName === 'BR' || c.tagName === 'A' || c.tagName === 'SPAN'; });
     }
 
+    var ALWAYS_EDIT = new Set(['P','H1','H2','H3','H4','SPAN']);
     var node = walker.nextNode();
     while (node) {
-      if (!SKIP.has(node.tagName) && node.textContent.trim().length > 0) {
-        if (node.children.length === 0 || onlySimpleChildren(node)) {
+      if (!SKIP.has(node.tagName)) {
+        var hasText = node.textContent.trim().length > 0;
+        var alwaysEdit = ALWAYS_EDIT.has(node.tagName);
+        if ((hasText || alwaysEdit) && (node.children.length === 0 || onlySimpleChildren(node))) {
           toEdit.push(node);
         }
       }
