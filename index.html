@@ -995,18 +995,21 @@
   }
 
   function enableEdit() {
-    var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','BR','HR','HEADER','SECTION','FOOTER','DIV']);
+    var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','HR','HEADER','SECTION','FOOTER']);
     var page = document.getElementById('page-dark');
     var walker = document.createTreeWalker(page, NodeFilter.SHOW_ELEMENT);
     var toEdit = [];
+
+    function onlySimpleChildren(el) {
+      return Array.from(el.children).every(function(c) { return c.tagName === 'BR' || c.tagName === 'A' || c.tagName === 'SPAN'; });
+    }
+
     var node = walker.nextNode();
     while (node) {
-      if (!SKIP.has(node.tagName) && node.children.length === 0 && node.textContent.trim().length > 0) {
-        toEdit.push(node);
-      }
-      // divs sem filhos elemento (só texto direto)
-      if (node.tagName === 'DIV' && node.children.length === 0 && node.textContent.trim().length > 0) {
-        toEdit.push(node);
+      if (!SKIP.has(node.tagName) && node.textContent.trim().length > 0) {
+        if (node.children.length === 0 || onlySimpleChildren(node)) {
+          toEdit.push(node);
+        }
       }
       node = walker.nextNode();
     }
