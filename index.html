@@ -917,5 +917,148 @@
     setTimeout(setupReveal, 100);
   });
 </script>
+
+<script>
+/* ── Painel de edição inline ── */
+(function () {
+  var REPO = 'moveisinovare1-lang/ciquini-bodas-landing';
+  var FILE = 'index.html';
+  var PWD  = 'Q2lxdWluaUAyMDI1'; // Ciquini@2025
+
+  var clicks = 0, timer;
+
+  function init() {
+    var logo = document.querySelector('footer img');
+    if (!logo) return;
+    logo.style.cursor = 'pointer';
+    logo.addEventListener('click', function () {
+      clicks++;
+      clearTimeout(timer);
+      timer = setTimeout(function () { clicks = 0; }, 3000);
+      if (clicks >= 5) { clicks = 0; showModal(); }
+    });
+  }
+
+  function showModal() {
+    var wrap = document.createElement('div');
+    wrap.id = 'edit-modal';
+    wrap.innerHTML = [
+      '<div style="position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:99999;display:flex;align-items:center;justify-content:center;">',
+        '<div style="background:#1A1613;border:1px solid rgba(194,163,107,.4);border-radius:8px;padding:40px;width:340px;font-family:Manrope,sans-serif;">',
+          '<div style="font-size:11px;font-weight:700;letter-spacing:3px;color:#C2A36B;margin-bottom:14px;">MODO EDIÇÃO</div>',
+          '<p style="color:#B7ADA3;font-size:14px;margin:0 0 18px;line-height:1.5;">Digite a senha para editar os textos da página.</p>',
+          '<input id="ep" type="password" placeholder="Senha" style="width:100%;box-sizing:border-box;padding:11px 13px;background:#14110F;border:1px solid rgba(255,255,255,.18);border-radius:4px;color:#EDE7DF;font-size:15px;outline:none;margin-bottom:8px;">',
+          '<div id="eerr" style="color:#e05c5c;font-size:13px;min-height:18px;margin-bottom:10px;"></div>',
+          '<div style="display:flex;gap:10px;">',
+            '<button id="eok" style="flex:1;padding:11px;background:#C2A36B;color:#14110F;border:none;border-radius:4px;font-weight:700;font-size:14px;cursor:pointer;">Entrar</button>',
+            '<button id="ecx" style="flex:1;padding:11px;background:transparent;color:#8E847B;border:1px solid rgba(255,255,255,.15);border-radius:4px;font-weight:700;font-size:14px;cursor:pointer;">Cancelar</button>',
+          '</div>',
+        '</div>',
+      '</div>'
+    ].join('');
+    document.body.appendChild(wrap);
+
+    var inp = document.getElementById('ep');
+    var err = document.getElementById('eerr');
+    inp.focus();
+
+    document.getElementById('eok').onclick = function () {
+      if (btoa(inp.value) === PWD) {
+        document.body.removeChild(wrap);
+        enableEdit();
+      } else {
+        err.textContent = 'Senha incorreta.';
+        inp.value = ''; inp.focus();
+      }
+    };
+    inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('eok').click(); });
+    document.getElementById('ecx').onclick = function () { document.body.removeChild(wrap); };
+  }
+
+  function enableEdit() {
+    var sel = '#page-dark h1, #page-dark h2, #page-dark h3, #page-dark p, #page-dark .hero-eyebrow, #page-dark [style*="letter-spacing:4px"], #page-dark [style*="letter-spacing:2px"]';
+    document.querySelectorAll(sel).forEach(function (el) {
+      el.contentEditable = 'true';
+      el.setAttribute('data-editable', '1');
+      el.style.outline = '2px dashed rgba(194,163,107,.45)';
+      el.style.borderRadius = '2px';
+      el.style.minHeight = '1em';
+    });
+
+    var bar = document.createElement('div');
+    bar.id = 'edit-bar';
+    bar.innerHTML = [
+      '<div style="position:fixed;top:0;left:0;right:0;z-index:99998;background:#C2A36B;display:flex;align-items:center;justify-content:space-between;padding:10px 24px;font-family:Manrope,sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.3);">',
+        '<span style="font-weight:700;font-size:13px;color:#14110F;letter-spacing:.4px;">✏️  MODO EDIÇÃO — clique em qualquer texto dourado para editar</span>',
+        '<div style="display:flex;gap:10px;">',
+          '<button id="ebtn-d" style="padding:8px 18px;background:transparent;border:1px solid rgba(20,17,15,.3);border-radius:4px;font-weight:700;font-size:13px;color:#14110F;cursor:pointer;">Descartar</button>',
+          '<button id="ebtn-s" style="padding:8px 22px;background:#14110F;border:none;border-radius:4px;font-weight:700;font-size:13px;color:#C2A36B;cursor:pointer;">Publicar alterações</button>',
+        '</div>',
+      '</div>'
+    ].join('');
+    document.body.prepend(bar);
+    document.body.style.paddingTop = '46px';
+
+    document.getElementById('ebtn-d').onclick = function () { location.reload(); };
+    document.getElementById('ebtn-s').onclick = publish;
+  }
+
+  function publish() {
+    var token = sessionStorage.getItem('_ght');
+    if (!token) {
+      token = prompt('Cole aqui o token de acesso ao GitHub:');
+      if (!token) return;
+      sessionStorage.setItem('_ght', token);
+    }
+
+    var btn = document.getElementById('ebtn-s');
+    btn.textContent = 'Publicando…';
+    btn.disabled = true;
+
+    // Limpa marcações de edição antes de capturar o HTML
+    document.querySelectorAll('[data-editable]').forEach(function (el) {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('data-editable');
+      el.style.outline = '';
+      el.style.borderRadius = '';
+      el.style.minHeight = '';
+    });
+    var barEl = document.getElementById('edit-bar');
+    if (barEl) barEl.remove();
+    document.body.style.paddingTop = '';
+
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var b64  = btoa(unescape(encodeURIComponent(html)));
+
+    fetch('https://api.github.com/repos/' + REPO + '/contents/' + FILE, {
+      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      return fetch('https://api.github.com/repos/' + REPO + '/contents/' + FILE, {
+        method: 'PUT',
+        headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: 'Atualização de conteúdo', content: b64, sha: data.sha })
+      });
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (data) {
+      if (data.content) {
+        alert('✅ Publicado com sucesso! As alterações já estão no ar.');
+        location.reload();
+      } else {
+        throw new Error('GitHub retornou erro');
+      }
+    })
+    .catch(function () {
+      alert('❌ Erro ao publicar. Verifique o token e tente novamente.');
+      sessionStorage.removeItem('_ght');
+      location.reload();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
 </body>
 </html>
