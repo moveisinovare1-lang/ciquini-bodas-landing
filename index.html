@@ -976,8 +976,22 @@
   }
 
   function enableEdit() {
-    var sel = '#page-dark h1, #page-dark h2, #page-dark h3, #page-dark p, #page-dark .hero-eyebrow, #page-dark [style*="letter-spacing:4px"], #page-dark [style*="letter-spacing:2px"]';
-    document.querySelectorAll(sel).forEach(function (el) {
+    var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','BR','HR','HEADER','SECTION','FOOTER','DIV']);
+    var page = document.getElementById('page-dark');
+    var walker = document.createTreeWalker(page, NodeFilter.SHOW_ELEMENT);
+    var toEdit = [];
+    var node = walker.nextNode();
+    while (node) {
+      if (!SKIP.has(node.tagName) && node.children.length === 0 && node.textContent.trim().length > 0) {
+        toEdit.push(node);
+      }
+      // divs sem filhos elemento (só texto direto)
+      if (node.tagName === 'DIV' && node.children.length === 0 && node.textContent.trim().length > 0) {
+        toEdit.push(node);
+      }
+      node = walker.nextNode();
+    }
+    toEdit.forEach(function (el) {
       el.contentEditable = 'true';
       el.setAttribute('data-editable', '1');
       el.style.outline = '2px dashed rgba(194,163,107,.45)';
