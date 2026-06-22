@@ -995,19 +995,22 @@
   }
 
   function enableEdit() {
-    var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','HR','HEADER','SECTION','FOOTER']);
-    var page = document.getElementById('page-dark');
-    var walker = document.createTreeWalker(page, NodeFilter.SHOW_ELEMENT);
+    var SKIP = new Set(['SCRIPT','STYLE','IMG','SVG','PATH','INPUT','TEXTAREA','SELECT','IFRAME','HR']);
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
     var toEdit = [];
 
     function onlySimpleChildren(el) {
-      return Array.from(el.children).every(function(c) { return c.tagName === 'BR' || c.tagName === 'A' || c.tagName === 'SPAN'; });
+      return Array.from(el.children).every(function(c) {
+        return c.tagName === 'BR' || c.tagName === 'A' || c.tagName === 'SPAN';
+      });
     }
 
-    var ALWAYS_EDIT = new Set(['P','H1','H2','H3','H4','SPAN']);
+    var ALWAYS_EDIT = new Set(['P','H1','H2','H3','H4','SPAN','LI']);
     var node = walker.nextNode();
     while (node) {
-      if (!SKIP.has(node.tagName)) {
+      // Ignora UI de edição
+      var inEditUI = node.closest && (node.closest('#edit-bar') || node.closest('#edit-modal'));
+      if (!inEditUI && !SKIP.has(node.tagName)) {
         var hasText = node.textContent.trim().length > 0;
         var alwaysEdit = ALWAYS_EDIT.has(node.tagName);
         if ((hasText || alwaysEdit) && (node.children.length === 0 || onlySimpleChildren(node))) {
@@ -1016,24 +1019,41 @@
       }
       node = walker.nextNode();
     }
+
     document.execCommand('defaultParagraphSeparator', false, 'br');
 
     toEdit.forEach(function (el) {
+      // Salva e fixa a fonte computada no estilo inline ANTES de ativar edição
+      // Isso garante que ao redigitar o texto, a fonte seja herdada corretamente
+      var cs = window.getComputedStyle(el);
+      if (!el.style.fontFamily) el.style.fontFamily = cs.fontFamily;
+      if (!el.style.fontWeight) el.style.fontWeight = cs.fontWeight;
+      if (!el.style.fontStyle)  el.style.fontStyle  = cs.fontStyle;
+      if (!el.style.color)      el.style.color       = cs.color;
+
       el.contentEditable = 'true';
       el.setAttribute('data-editable', '1');
       el.style.outline = '2px dashed rgba(194,163,107,.45)';
       el.style.borderRadius = '2px';
       el.style.minHeight = '1em';
 
-      // Sincroniza elementos com mesmo data-sync
-      var syncKey = el.getAttribute('data-sync');
-      if (syncKey) {
-        el.addEventListener('input', function () {
+      el.addEventListener('input', function () {
+        // Remove wrappers <div> que o browser injeta ao redigitar campo vazio
+        Array.from(el.querySelectorAll('div')).forEach(function (div) {
+          var p = div.parentNode;
+          if (!p) return;
+          while (div.firstChild) p.insertBefore(div.firstChild, div);
+          p.removeChild(div);
+        });
+
+        // Sincroniza mobile ↔ desktop
+        var syncKey = el.getAttribute('data-sync');
+        if (syncKey) {
           document.querySelectorAll('[data-sync="' + syncKey + '"]').forEach(function (other) {
             if (other !== el) other.innerHTML = el.innerHTML;
           });
-        });
-      }
+        }
+      });
     });
     saveOriginals();
 
