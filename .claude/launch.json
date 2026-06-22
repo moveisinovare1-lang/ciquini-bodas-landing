@@ -3,9 +3,9 @@
   "configurations": [
     {
       "name": "landing",
-      "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765"],
-      "port": 8765
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-l", "8787", "."],
+      "port": 8787
     }
   ]
 }

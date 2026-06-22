@@ -18,15 +18,8 @@
       50%       { opacity: .4; transform: scale(.78); }
     }
 
-    /* ── Variant toggle ── */
-    #variant-bar { position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:2000;display:flex;align-items:center;gap:6px;background:rgba(18,15,13,.92);backdrop-filter:blur(8px);padding:6px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12); }
-    #variant-bar span { font-family:'Manrope',sans-serif;font-size:10px;font-weight:700;letter-spacing:1.5px;color:#8a807a;padding:0 8px 0 10px; }
-    .vbtn { border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:12px;font-weight:700;letter-spacing:.5px;padding:8px 18px;border-radius:999px;transition:all .2s;background:transparent;color:#9A8F87; }
-    .vbtn.active { background:#EDE7DF;color:#14110F; }
-
-    /* ── Page roots ── */
+    /* ── Page root ── */
     #page-dark { display:block; background:#14110F; color:#EDE7DF; font-family:'Manrope',sans-serif; overflow-x:hidden; }
-    #page-light { display:none; background:#F7F4EF; color:#26313B; font-family:'Hanken Grotesk',sans-serif; overflow-x:hidden; }
 
     /* ── Shared utilities ── */
     .pulse { width:8px;height:8px;border-radius:50%;animation:pulseDot 2s infinite;flex:none; }
@@ -91,15 +84,15 @@
 
       /* ── Mobile hero cinematográfico ── */
       .hero-section-mobile { min-height: 95svh !important; min-height: 95vh !important; max-height: 95svh !important; }
-      .hero-bg-mobile { background-position: 89% 25% !important; }
+      .hero-bg-mobile { background-position: 72% 30% !important; }
       .hero-overlay-1 { background: linear-gradient(180deg,
-        rgba(20,17,15,.97) 0%,
-        rgba(20,17,15,.88) 20%,
-        rgba(20,17,15,.75) 42%,
-        rgba(20,17,15,.88) 65%,
-        rgba(20,17,15,.98) 82%,
+        rgba(20,17,15,.88) 0%,
+        rgba(20,17,15,.55) 20%,
+        rgba(20,17,15,.35) 42%,
+        rgba(20,17,15,.6) 65%,
+        rgba(20,17,15,.92) 82%,
         rgba(20,17,15,1) 100%) !important; }
-      .hero-overlay-2 { background: none !important; }
+      .hero-overlay-2 { background: linear-gradient(90deg,rgba(20,17,15,.45) 0%,rgba(20,17,15,.1) 50%,rgba(20,17,15,0) 78%) !important; }
       .hero-content-wrap { justify-content: space-between !important; padding-bottom: 28px !important; padding-top: 60px !important; gap: 0 !important; }
       .hero-bottom-block { margin-top: 80px !important; }
       .hero-p { margin-top: 16px !important; font-size: 15px !important; line-height: 1.55 !important; }
@@ -110,14 +103,6 @@
       .hero-bottom-block { margin-top: 0 !important; }
       .hero-stats { margin-top: 24px !important; border-top: 1px solid rgba(255,255,255,.18) !important; }
 
-      /* light variant */
-      #page-light .hero-overlay-1 { background: linear-gradient(180deg,
-        rgba(247,244,239,.97) 0%,
-        rgba(247,244,239,.88) 20%,
-        rgba(247,244,239,.75) 42%,
-        rgba(247,244,239,.88) 65%,
-        rgba(247,244,239,.98) 82%,
-        rgba(247,244,239,1) 100%) !important; }
     }
     @media (max-width: 480px) {
       .grid-areas { grid-template-columns: 1fr !important; }
@@ -173,32 +158,6 @@
   </style>
 </head>
 <body>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- BG SWITCHER                                                    -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="bg-bar" style="position:fixed;top:22px;right:22px;z-index:2000;display:flex;flex-direction:column;gap:6px;background:rgba(18,15,13,.92);backdrop-filter:blur(8px);padding:10px;border-radius:10px;box-shadow:0 8px 30px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.12);">
-  <div style="font-family:'Manrope',sans-serif;font-size:9px;font-weight:700;letter-spacing:1.5px;color:#8a807a;text-align:center;padding-bottom:4px;">FUNDO</div>
-  <button onclick="setBg('team')"    id="bg0" class="bgbtn active" title="Equipe">👥 Equipe</button>
-  <button onclick="setBg('court')"   id="bg1" class="bgbtn"        title="Tribunal">🏛️ Tribunal</button>
-  <button onclick="setBg('gavel')"   id="bg2" class="bgbtn"        title="Martelo">⚖️ Martelo</button>
-  <button onclick="setBg('city')"    id="bg3" class="bgbtn"        title="Cidade">🌃 Cidade</button>
-  <button onclick="setBg('library')" id="bg4" class="bgbtn"        title="Biblioteca">📚 Biblioteca</button>
-</div>
-<style>
-  .bgbtn { border:none;cursor:pointer;font-family:'Manrope',sans-serif;font-size:11px;font-weight:600;padding:7px 12px;border-radius:6px;transition:all .2s;background:transparent;color:#9A8F87;text-align:left;white-space:nowrap; }
-  .bgbtn.active { background:rgba(194,163,107,.25);color:#C2A36B; }
-  .bgbtn:hover { color:#EDE7DF; }
-</style>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- VARIANT TOGGLE                                                 -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="variant-bar">
-  <span>VISUAL</span>
-  <button class="vbtn active" id="btn-dark" onclick="setVariant('dark')">Escuro</button>
-  <button class="vbtn"        id="btn-light" onclick="setVariant('light')">Claro</button>
-</div>
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- VARIANT A — DARK / SOPHISTICATED                               -->
@@ -513,10 +472,7 @@
 </div><!-- /page-dark -->
 
 
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!-- VARIANT B — LIGHT / CLEAN                                      -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<div id="page-light">
+<!-- REMOVED --><div id="page-light" style="display:none">
 
   <!-- HEADER -->
   <header style="position:sticky;top:0;z-index:900;display:flex;align-items:center;justify-content:space-between;padding:18px 44px;background:rgba(247,244,239,.85);backdrop-filter:blur(12px);border-bottom:1px solid rgba(38,49,59,.1);" class="header-pad">
@@ -824,42 +780,10 @@
 </div><!-- /page-light -->
 
 <script>
-  /* ── Background switcher ── */
-  const BG_IMAGES = {
-    team:    'assets/team.jpg',
-    court:   'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=1600&q=85&fit=crop',
-    gavel:   'https://images.unsplash.com/photo-1521587760476-6c12a4b040da?w=1600&q=85&fit=crop',
-    city:    'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1600&q=85&fit=crop',
-    library: 'https://images.unsplash.com/photo-1436450412740-6b988f486c6b?w=1600&q=85&fit=crop',
-  };
-
-  function setBg(key) {
-    const url = BG_IMAGES[key];
-    const pos = key === 'team' ? '40% 5%' : 'center center';
-    document.querySelectorAll('.hero-bg-mobile').forEach(el => {
-      el.style.setProperty('background-image', `url('${url}')`, 'important');
-      el.style.setProperty('background-position', pos, 'important');
-    });
-    document.querySelectorAll('.bgbtn').forEach(b => b.classList.remove('active'));
-    document.getElementById('bg' + Object.keys(BG_IMAGES).indexOf(key)).classList.add('active');
-  }
-
-  /* ── Variant toggle ── */
-  function setVariant(v) {
-    document.getElementById('page-dark').style.display  = v === 'dark'  ? 'block' : 'none';
-    document.getElementById('page-light').style.display = v === 'light' ? 'block' : 'none';
-    document.getElementById('btn-dark').classList.toggle('active',  v === 'dark');
-    document.getElementById('btn-light').classList.toggle('active', v === 'light');
-    window.scrollTo(0, 0);
-    setTimeout(setupReveal, 80);
-  }
-
   /* ── Hero intro animation ── */
   function heroIntro() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const page = document.getElementById('page-dark').style.display !== 'none'
-      ? document.getElementById('page-dark')
-      : document.getElementById('page-light');
+    const page = document.getElementById('page-dark');
     const section = page.querySelector('section');
     if (!section) return;
     const container = [...section.children].find(c =>
@@ -890,9 +814,7 @@
   let revNodes = [];
   function setupReveal() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const page = document.getElementById('page-dark').style.display !== 'none'
-      ? document.getElementById('page-dark')
-      : document.getElementById('page-light');
+    const page = document.getElementById('page-dark');
     const vh = window.innerHeight;
     const candidates = [
       ...page.querySelectorAll('section h2'),
