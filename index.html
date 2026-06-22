@@ -935,9 +935,20 @@
     raf = requestAnimationFrame(() => { raf = 0; scan(); });
   }, { passive: true });
 
+  function hideEmptyBars() {
+    document.querySelectorAll('.grid-3 > div, .grid-4 > div').forEach(function(card) {
+      var bar = card.querySelector('div[style*="width:40px"]');
+      if (!bar) return;
+      var texts = Array.from(card.querySelectorAll('h3, p'));
+      var empty = texts.every(function(el) { return el.textContent.trim() === ''; });
+      bar.style.display = empty ? 'none' : '';
+    });
+  }
+
   window.addEventListener('DOMContentLoaded', () => {
     heroIntro();
     setTimeout(setupReveal, 100);
+    hideEmptyBars();
   });
 </script>
 
