@@ -60,7 +60,7 @@
       .grid-footer { grid-template-columns: 1fr 1fr !important; }
       .grid-sobre { grid-template-columns: 1fr !important; gap: 32px !important; }
       .hero-h1 { font-size: 42px !important; }
-      .section-h2 { font-size: 26px !important; }
+      .section-h2 { font-size: 26px !important; font-family: "Cormorant Garamond", serif !important; }
       .section-pad { padding: 36px 20px !important; }
       .header-pad { padding: 14px 20px !important; }
       .hero-pad { padding: 20px 20px 32px !important; }
@@ -144,7 +144,7 @@
 
       /* Seção padding geral */
       .section-pad { padding: 28px 16px !important; }
-      .section-h2 { font-size: 22px !important; line-height: 1.2 !important; }
+      .section-h2 { font-size: 22px !important; line-height: 1.2 !important; font-family: "Cormorant Garamond", serif !important; }
       [style*="margin-bottom:22px"][style*="letter-spacing:4px"] { margin-bottom: 8px !important; font-size: 9px !important; }
 
       /* Divisor ícone menor no mobile */
@@ -1016,11 +1016,6 @@
       }
       node = walker.nextNode();
     }
-    // Força herança de fonte ao digitar em campos editáveis
-    var editStyle = document.createElement('style');
-    editStyle.id = 'edit-font-fix';
-    editStyle.textContent = '[data-editable], [data-editable] div, [data-editable] span { font-family: inherit !important; font-size: inherit !important; font-weight: inherit !important; font-style: inherit !important; color: inherit !important; }';
-    document.head.appendChild(editStyle);
     document.execCommand('defaultParagraphSeparator', false, 'br');
 
     toEdit.forEach(function (el) {
