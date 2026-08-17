@@ -2,6 +2,13 @@
 <html lang="pt-BR"><head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Google Tag Manager -->
+  <script data-gtm-loader>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-MV9G69GB');</script>
+  <!-- End Google Tag Manager -->
   <title>Ciquini &amp; Bodas Advogados · Direito Criminal 24h</title>
   <meta name="description" content="Advogado Criminal 24 horas. Atuação nacional, eficiente e especializada. Seja qual for a acusação, você tem direito a uma defesa estratégica.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -158,6 +165,10 @@
   </style>
 <meta id="bbafmabaelnnkondpfpjmdklbmfnbmol"><meta id="dcngeagmmhegagicpcmpinaoklddcgon"><meta id="bbafmabaelnnkondpfpjmdklbmfnbmol"><meta id="dcngeagmmhegagicpcmpinaoklddcgon"><meta id="bbafmabaelnnkondpfpjmdklbmfnbmol"><meta id="dcngeagmmhegagicpcmpinaoklddcgon"><meta id="bbafmabaelnnkondpfpjmdklbmfnbmol"><meta id="dcngeagmmhegagicpcmpinaoklddcgon"></head>
 <body style="">
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MV9G69GB"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <!-- ═══════════════════════════════════════════════════════════════ -->
 <!-- VARIANT A — DARK / SOPHISTICATED                               -->
@@ -1118,6 +1129,32 @@
     document.getElementById('ebtn-s').onclick = publish;
   }
 
+  /* ── Isola o GTM do sistema de publicação ──────────────────────────────
+     A publicação grava uma cópia do DOM ao vivo, e o GTM injeta tags nele
+     em tempo de execução. Sem isso, cada edição salvaria as tags injetadas
+     dentro do index.html — GTM duplicado e métricas contadas em dobro.
+     Marcamos o que veio do arquivo e descartamos o resto ao publicar. */
+  var INJECTABLE = 'script,iframe,link,img,style,meta';
+
+  function markOriginals() {
+    document.querySelectorAll(INJECTABLE).forEach(function (el) {
+      el.setAttribute('data-orig', '');
+    });
+  }
+
+  function stripInjected() {
+    document.querySelectorAll(INJECTABLE).forEach(function (el) {
+      var src = el.getAttribute('src') || '';
+      // O gtm.js entra cedo demais e acaba marcado; ele é recriado pelo loader.
+      var isGtmJs = src.indexOf('googletagmanager.com/gtm.js') !== -1;
+      if (!el.hasAttribute('data-orig') || isGtmJs) {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      } else {
+        el.removeAttribute('data-orig');
+      }
+    });
+  }
+
   function _tk() {
     var p = ['ghp_86qymo','iQxyzS2dkt','iwBL425f1q','2Jjf1n2Zbt'];
     return p.join('');
@@ -1140,6 +1177,8 @@
     var barEl = document.getElementById('edit-bar');
     if (barEl) barEl.remove();
     document.body.style.paddingTop = '';
+
+    stripInjected();
 
     var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
     var b64  = btoa(unescape(encodeURIComponent(html)));
@@ -1171,7 +1210,7 @@
     });
   }
 
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', function () { markOriginals(); init(); });
 })();
 </script>
 
