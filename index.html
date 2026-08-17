@@ -966,9 +966,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>
 /* ── Painel de edição inline ── */
 (function () {
-  var REPO = 'moveisinovare1-lang/ciquini-bodas-landing';
-  var FILE = 'index.html';
-  var PWD  = 'Q2lxdWluaUAyMDI1'; // Ciquini@2025
+  /* A senha é conferida pelo servidor (/api/publish). Ela não fica guardada
+     nesta página — só é mantida em memória durante a sessão de edição, para
+     ser reenviada na hora de publicar. */
+  var SENHA_SESSAO = '';
 
   var clicks = 0, timer;
 
@@ -1007,14 +1008,37 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     var err = document.getElementById('eerr');
     inp.focus();
 
-    document.getElementById('eok').onclick = function () {
-      if (btoa(inp.value) === PWD) {
-        document.body.removeChild(wrap);
-        enableEdit();
-      } else {
-        err.textContent = 'Senha incorreta.';
-        inp.value = ''; inp.focus();
-      }
+    var btnOk = document.getElementById('eok');
+    btnOk.onclick = function () {
+      var tentativa = inp.value;
+      if (!tentativa) { inp.focus(); return; }
+
+      btnOk.disabled = true;
+      btnOk.textContent = 'Verificando…';
+      err.textContent = '';
+
+      api({ acao: 'verificar', senha: tentativa })
+        .then(function (r) {
+          if (r.status === 200 && r.corpo.ok) {
+            SENHA_SESSAO = tentativa;
+            document.body.removeChild(wrap);
+            enableEdit();
+            return;
+          }
+          if (r.status === 401) err.textContent = 'Senha incorreta.';
+          else if (r.status === 500) err.textContent = 'Edição não configurada no servidor.';
+          else err.textContent = r.corpo.mensagem || 'Não foi possível verificar agora.';
+          inp.value = '';
+          btnOk.disabled = false;
+          btnOk.textContent = 'Entrar';
+          inp.focus();
+        })
+        .catch(function () {
+          err.textContent = 'Sem conexão com o servidor.';
+          btnOk.disabled = false;
+          btnOk.textContent = 'Entrar';
+          inp.focus();
+        });
     };
     inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('eok').click(); });
     document.getElementById('ecx').onclick = function () { document.body.removeChild(wrap); };
@@ -1142,10 +1166,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     });
   }
 
-  function stripInjected() {
-    document.querySelectorAll(INJECTABLE).forEach(function (el) {
+  /* Monta o HTML a gravar a partir de uma CÓPIA da página.
+     Trabalhar na cópia é essencial: se mexêssemos no DOM ao vivo, uma
+     publicação que falhasse deixaria a página sem as marcações, e a tentativa
+     seguinte gravaria um arquivo sem scripts, imagens nem estilos. */
+  function htmlLimpo() {
+    var copia = document.documentElement.cloneNode(true);
+    copia.querySelectorAll(INJECTABLE).forEach(function (el) {
       var src = el.getAttribute('src') || '';
-      // O gtm.js entra cedo demais e acaba marcado; ele é recriado pelo loader.
+      // O gtm.js entra cedo demais e acaba marcado; o loader o recria sozinho.
       var isGtmJs = src.indexOf('googletagmanager.com/gtm.js') !== -1;
       if (!el.hasAttribute('data-orig') || isGtmJs) {
         if (el.parentNode) el.parentNode.removeChild(el);
@@ -1153,15 +1182,24 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         el.removeAttribute('data-orig');
       }
     });
+    return '<!DOCTYPE html>\n' + copia.outerHTML;
   }
 
-  function _tk() {
-    var p = ['ghp_86qymo','iQxyzS2dkt','iwBL425f1q','2Jjf1n2Zbt'];
-    return p.join('');
+  /* A senha e o token do GitHub ficam no servidor (função /api/publish).
+     Nada de credencial dentro desta página. */
+  function api(dados) {
+    return fetch('/api/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(dados)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (corpo) {
+        return { status: r.status, corpo: corpo };
+      });
+    });
   }
 
   function publish() {
-    var token = _tk();
     var btn = document.getElementById('ebtn-s');
     btn.textContent = 'Publicando…';
     btn.disabled = true;
@@ -1178,36 +1216,23 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     if (barEl) barEl.remove();
     document.body.style.paddingTop = '';
 
-    stripInjected();
-
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    var b64  = btoa(unescape(encodeURIComponent(html)));
-
-    fetch('https://api.github.com/repos/' + REPO + '/contents/' + FILE, {
-      headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json' }
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      return fetch('https://api.github.com/repos/' + REPO + '/contents/' + FILE, {
-        method: 'PUT',
-        headers: { Authorization: 'token ' + token, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: 'Atualização de conteúdo', content: b64, sha: data.sha })
+    api({ senha: SENHA_SESSAO, html: htmlLimpo() })
+      .then(function (r) {
+        if (r.status === 200 && r.corpo.ok) {
+          alert('✅ Publicado com sucesso! As alterações já estão no ar.');
+          location.reload();
+          return;
+        }
+        if (r.status === 401) throw new Error('A senha não confere mais. Recarregue a página e tente de novo.');
+        if (r.status === 500) throw new Error('A publicação não está configurada no servidor.');
+        throw new Error(r.corpo.mensagem || 'O servidor recusou a publicação.');
+      })
+      .catch(function (e) {
+        var motivo = (e instanceof TypeError) ? 'Sem conexão com o servidor.' : e.message;
+        alert('❌ Não foi possível publicar.\n\n' + motivo + '\n\nSuas alterações continuam na tela — nada foi perdido. Você pode tentar de novo.');
+        // enableEdit() reconstrói a barra e reativa os campos que publish() desligou.
+        enableEdit();
       });
-    })
-    .then(function (r) { return r.json(); })
-    .then(function (data) {
-      if (data.content) {
-        alert('✅ Publicado com sucesso! As alterações já estão no ar.');
-        location.reload();
-      } else {
-        throw new Error('GitHub retornou erro');
-      }
-    })
-    .catch(function () {
-      alert('❌ Erro ao publicar. Verifique o token e tente novamente.');
-      sessionStorage.removeItem('_ght');
-      location.reload();
-    });
   }
 
   document.addEventListener('DOMContentLoaded', function () { markOriginals(); init(); });
