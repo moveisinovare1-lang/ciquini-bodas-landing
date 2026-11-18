@@ -1182,7 +1182,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         el.removeAttribute('data-orig');
       }
     });
-    return '<!DOCTYPE html>\n' + copia.outerHTML;
+    /* Rastreadores reescrevem o href dos botoes enquanto a pagina roda; devolve o endereco que veio do arquivo antes de gravar. */ copia.querySelectorAll('a[data-href-orig]').forEach(function(a){a.setAttribute('href',a.getAttribute('data-href-orig'));a.removeAttribute('data-href-orig');}); return '<!DOCTYPE html>\n' + copia.outerHTML;
   }
 
   /* A senha e o token do GitHub ficam no servidor (função /api/publish).
